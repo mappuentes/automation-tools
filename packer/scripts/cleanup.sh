@@ -33,3 +33,8 @@ echo "==> Clear the history so our install isn't there"
 rm -f /root/.wget-hsts
 
 export HISTSIZE=0
+
+echo "==> Reset cloud-init"
+sudo rm -f /etc/cloud/cloud.cfg.d/99-installer.cfg
+sudo rm -f /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg
+sudo cloud-init clean

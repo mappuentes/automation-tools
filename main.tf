@@ -11,37 +11,46 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
+variable "vm_name" {
+  description = "The name of the virtual machine"
+  default     = "ubuntu"
+  type        = string
+}
+
 resource "libvirt_volume" "ubuntu-qcow2" {
   name   = "ubuntu20.04"
   pool   = "default"
-  source = "${path.module}/focal-server-cloudimg-amd64.img"
+  source = "${path.module}/packer/output-focal/ubuntu-focal.img"
   format = "qcow2"
 }
 
 data "template_file" "user_data" {
-  template = file("${path.module}/cloud_init.cfg")
+  template = file("userdata.tpl")
+  vars = {
+    HOSTNAME = var.vm_name
+  }
 }
 
 resource "libvirt_cloudinit_disk" "cloudinit" {
-  name      = "cloudinit.iso"
+  name      = "${var.vm_name}-cloudinit.iso"
   user_data = data.template_file.user_data.rendered
 }
 
 resource "libvirt_domain" "vm" {
-  name   = "nodo-prueba"
-  memory = "2048"
+  name   = var.vm_name
+  memory = 2048
   vcpu   = 2
 
   disk {
     volume_id = libvirt_volume.ubuntu-qcow2.id
   }
 
-  cloudinit = libvirt_cloudinit_disk.cloudinit.id
-
   network_interface {
-    network_name = "default"
+    network_name   = "default"
     wait_for_lease = true
   }
+
+  cloudinit = libvirt_cloudinit_disk.cloudinit.id
 
   console {
     type        = "pty"
@@ -50,8 +59,7 @@ resource "libvirt_domain" "vm" {
   }
 
   graphics {
-    type = "vnc"
+    type        = "vnc"
     listen_type = "address"
   }
 }
-
