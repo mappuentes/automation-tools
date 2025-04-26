@@ -62,7 +62,7 @@ resource "libvirt_volume" "worker1-qcow2" {
 }
 
 resource "libvirt_volume" "worker2-qcow2" {
-  provider = libvirt.melchor
+  provider = libvirt.gaspar
   name     = "worker2Ubuntu20.04"
   pool     = "default"
   source   = "${path.module}/packer/output-focal/ubuntu-focal.img"
@@ -106,7 +106,7 @@ data "template_file" "user_data_worker2" {
 }
 
 resource "libvirt_cloudinit_disk" "cloudinit_worker2" {
-  provider  = libvirt.melchor
+  provider  = libvirt.gaspar
   name      = "${var.vm_worker2}-cloudinit.iso"
   user_data = data.template_file.user_data_worker2.rendered
 }
@@ -168,7 +168,7 @@ resource "libvirt_domain" "worker1" {
 }
 
 resource "libvirt_domain" "worker2" {
-  provider = libvirt.melchor
+  provider = libvirt.gaspar
   name     = var.vm_worker2
   memory   = 2048
   vcpu     = 2
