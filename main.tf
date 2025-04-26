@@ -26,6 +26,12 @@ variable "vm_worker" {
   default     = "worker"
   type        = string
 }
+variable "vm_master_ip" {
+  default = "10.0.0.100"
+}
+variable "vm_worker_ip" {
+  default = "10.0.0.101"
+}
 
 resource "libvirt_volume" "master-qcow2" {
   provider = libvirt.gaspar
@@ -46,7 +52,8 @@ resource "libvirt_volume" "worker1-qcow2" {
 data "template_file" "user_data_master" {
   template = file("userdata.tpl")
   vars = {
-    HOSTNAME = var.vm_master
+    HOSTNAME   = var.vm_master
+    IP_ADDRESS = var.vm_master_ip
   }
 }
 
@@ -59,7 +66,8 @@ resource "libvirt_cloudinit_disk" "cloudinit_master" {
 data "template_file" "user_data_worker" {
   template = file("userdata.tpl")
   vars = {
-    HOSTNAME = var.vm_worker
+    HOSTNAME   = var.vm_worker
+    IP_ADDRESS = var.vm_worker_ip
   }
 }
 
@@ -70,17 +78,17 @@ resource "libvirt_cloudinit_disk" "cloudinit_worker" {
 }
 
 resource "libvirt_domain" "master" {
-  name   = var.vm_master
-  memory = 2048
-  vcpu   = 2
+  name    = var.vm_master
+  memory  = 2048
+  vcpu    = 2
 
   disk {
     volume_id = libvirt_volume.master-qcow2.id
   }
 
   network_interface {
-    network_name   = "default"
-    wait_for_lease = true
+    bridge    = "br0"
+    addresses = ["10.0.0.100"]
   }
 
   cloudinit = libvirt_cloudinit_disk.cloudinit_master.id
@@ -107,8 +115,8 @@ resource "libvirt_domain" "worker" {
   }
 
   network_interface {
-    network_name   = "default"
-    wait_for_lease = true
+    bridge    = "br0"
+    addresses = ["10.0.0.101"]
   }
 
   cloudinit = libvirt_cloudinit_disk.cloudinit_worker.id
