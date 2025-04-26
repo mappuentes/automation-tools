@@ -21,16 +21,28 @@ variable "vm_master" {
   default     = "master"
   type        = string
 }
-variable "vm_worker" {
+
+variable "vm_worker1" {
   description = "The name of the virtual machine"
-  default     = "worker"
+  default     = "worker1"
   type        = string
 }
+
+variable "vm_worker2" {
+  description = "The name of the virtual machine"
+  default     = "worker2"
+  type        = string
+}
+
 variable "vm_master_ip" {
   default = "10.0.0.100"
 }
-variable "vm_worker_ip" {
+variable "vm_worker1_ip" {
   default = "10.0.0.101"
+}
+
+variable "vm_worker2_ip" {
+  default = "10.0.0.102"
 }
 
 resource "libvirt_volume" "master-qcow2" {
@@ -44,6 +56,14 @@ resource "libvirt_volume" "master-qcow2" {
 resource "libvirt_volume" "worker1-qcow2" {
   provider = libvirt.melchor
   name     = "worker1Ubuntu20.04"
+  pool     = "default"
+  source   = "${path.module}/packer/output-focal/ubuntu-focal.img"
+  format   = "qcow2"
+}
+
+resource "libvirt_volume" "worker2-qcow2" {
+  provider = libvirt.melchor
+  name     = "worker2Ubuntu20.04"
   pool     = "default"
   source   = "${path.module}/packer/output-focal/ubuntu-focal.img"
   format   = "qcow2"
@@ -63,18 +83,32 @@ resource "libvirt_cloudinit_disk" "cloudinit_master" {
   user_data = data.template_file.user_data_master.rendered
 }
 
-data "template_file" "user_data_worker" {
+data "template_file" "user_data_worker1" {
   template = file("userdata.tpl")
   vars = {
-    HOSTNAME   = var.vm_worker
-    IP_ADDRESS = var.vm_worker_ip
+    HOSTNAME   = var.vm_worker1
+    IP_ADDRESS = var.vm_worker1_ip
   }
 }
 
-resource "libvirt_cloudinit_disk" "cloudinit_worker" {
+resource "libvirt_cloudinit_disk" "cloudinit_worker1" {
   provider  = libvirt.melchor
-  name      = "${var.vm_worker}-cloudinit.iso"
-  user_data = data.template_file.user_data_worker.rendered
+  name      = "${var.vm_worker1}-cloudinit.iso"
+  user_data = data.template_file.user_data_worker1.rendered
+}
+
+data "template_file" "user_data_worker2" {
+  template = file("userdata.tpl")
+  vars = {
+    HOSTNAME   = var.vm_worker2
+    IP_ADDRESS = var.vm_worker2_ip
+  }
+}
+
+resource "libvirt_cloudinit_disk" "cloudinit_worker2" {
+  provider  = libvirt.melchor
+  name      = "${var.vm_worker2}-cloudinit.iso"
+  user_data = data.template_file.user_data_worker2.rendered
 }
 
 resource "libvirt_domain" "master" {
@@ -88,7 +122,7 @@ resource "libvirt_domain" "master" {
 
   network_interface {
     bridge    = "br0"
-    addresses = ["10.0.0.100"]
+    addresses = [var.vm_master_ip]
   }
 
   cloudinit = libvirt_cloudinit_disk.cloudinit_master.id
@@ -104,9 +138,9 @@ resource "libvirt_domain" "master" {
     listen_type = "address"
   }
 }
-resource "libvirt_domain" "worker" {
+resource "libvirt_domain" "worker1" {
   provider = libvirt.melchor
-  name     = var.vm_worker
+  name     = var.vm_worker1
   memory   = 2048
   vcpu     = 2
 
@@ -116,10 +150,39 @@ resource "libvirt_domain" "worker" {
 
   network_interface {
     bridge    = "br0"
-    addresses = ["10.0.0.101"]
+    addresses = [var.vm_worker1_ip]
   }
 
-  cloudinit = libvirt_cloudinit_disk.cloudinit_worker.id
+  cloudinit = libvirt_cloudinit_disk.cloudinit_worker1.id
+
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "vnc"
+    listen_type = "address"
+  }
+}
+
+resource "libvirt_domain" "worker2" {
+  provider = libvirt.melchor
+  name     = var.vm_worker2
+  memory   = 2048
+  vcpu     = 2
+
+  disk {
+    volume_id = libvirt_volume.worker2-qcow2.id
+  }
+
+  network_interface {
+    bridge    = "br0"
+    addresses = [var.vm_worker2_ip]
+  }
+
+  cloudinit = libvirt_cloudinit_disk.cloudinit_worker2.id
 
   console {
     type        = "pty"
