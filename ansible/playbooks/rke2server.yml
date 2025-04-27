@@ -15,9 +15,6 @@
       shell: curl -sfL https://get.rke2.io | sh -
       when: not rke2_config.stat.exists
 
-    - name: Instalar RKE2
-      shell: curl -sfL https://get.rke2.io | sh -
-
     - name: Habilitar servicio rke2-server
       systemd:
         name: rke2-server.service
