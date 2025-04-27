@@ -45,16 +45,20 @@ variable "vm_worker2_ip" {
   default = "10.0.0.102"
 }
 
-variable "ssh_ansible_key_master" {
-  default = file("~/.ssh/id_rsa_ansible_master.pub")
+variable "ssh_ansible_key_master" {}
+variable "ssh_ansible_key_worker1" {}
+variable "ssh_ansible_key_worker2" {}
+
+data "local_file" "ssh_ansible_key_master" {
+  filename = "${path.module}/.ssh/id_rsa_ansible_master.pub"
 }
 
-variable "ssh_ansible_key_worker1" {
-  default = file("~/.ssh/id_rsa_ansible_worker1.pub")
+data "local_file" "ssh_ansible_key_worker1" {
+  filename = "${path.module}/.ssh/id_rsa_ansible_worker1.pub"
 }
 
-variable "ssh_ansible_key_worker2" {
-  default = file("~/.ssh/id_rsa_ansible_worker2.pub")
+data "local_file" "ssh_ansible_key_worker2" {
+  filename = "${path.module}/.ssh/id_rsa_ansible_worker2.pub"
 }
 
 resource "libvirt_volume" "master-qcow2" {
@@ -86,7 +90,7 @@ data "template_file" "user_data_master" {
   vars = {
     HOSTNAME       = var.vm_master
     IP_ADDRESS     = var.vm_master_ip
-    SSH_PUBLIC_KEY = var.ssh_ansible_key_master
+    SSH_PUBLIC_KEY = data.local_file.ssh_ansible_key_master.content
   }
 }
 
@@ -101,7 +105,7 @@ data "template_file" "user_data_worker1" {
   vars = {
     HOSTNAME       = var.vm_worker1
     IP_ADDRESS     = var.vm_worker1_ip
-    SSH_PUBLIC_KEY = var.ssh_ansible_key_worker1
+    SSH_PUBLIC_KEY = data.local_file.ssh_ansible_key_worker1.content
   }
 }
 
@@ -116,7 +120,7 @@ data "template_file" "user_data_worker2" {
   vars = {
     HOSTNAME       = var.vm_worker2
     IP_ADDRESS     = var.vm_worker2_ip
-    SSH_PUBLIC_KEY = var.ssh_ansible_key_worker2
+    SSH_PUBLIC_KEY = data.local_file.ssh_ansible_key_worker2.content
   }
 }
 
