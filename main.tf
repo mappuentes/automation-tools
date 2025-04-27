@@ -45,20 +45,16 @@ variable "vm_worker2_ip" {
   default = "10.0.0.102"
 }
 
-variable "ssh_ansible_key_master" {}
-variable "ssh_ansible_key_worker1" {}
-variable "ssh_ansible_key_worker2" {}
-
 data "local_file" "ssh_ansible_key_master" {
-  filename = "${path.module}/.ssh/id_rsa_ansible_master.pub"
+  filename = "/home/administrador/.ssh/id_rsa_ansible_master.pub"
 }
 
 data "local_file" "ssh_ansible_key_worker1" {
-  filename = "${path.module}/.ssh/id_rsa_ansible_worker1.pub"
+  filename = "/home/administrador/.ssh/id_rsa_ansible_worker1.pub"
 }
 
 data "local_file" "ssh_ansible_key_worker2" {
-  filename = "${path.module}/.ssh/id_rsa_ansible_worker2.pub"
+  filename = "/home/administrador/.ssh/id_rsa_ansible_worker2.pub"
 }
 
 resource "libvirt_volume" "master-qcow2" {
