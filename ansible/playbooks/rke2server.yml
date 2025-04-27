@@ -1,0 +1,79 @@
+---
+- name: Configurar master RKE2
+  hosts: master
+  become: yes
+
+  tasks:
+    # Comprobar si el archivo rke2.yaml existe (lo que indica que RKE2 ya está instalado)
+    - name: Comprobar si el archivo rke2.yaml existe
+      stat:
+        path: /etc/rancher/rke2/rke2.yaml
+      register: rke2_config
+
+    # Instalar RKE2 si no está instalado
+    - name: Instalar RKE2 si no está instalado
+      shell: curl -sfL https://get.rke2.io | sh -
+      when: not rke2_config.stat.exists
+
+    - name: Instalar RKE2
+      shell: curl -sfL https://get.rke2.io | sh -
+
+    - name: Habilitar servicio rke2-server
+      systemd:
+        name: rke2-server.service
+        enabled: yes
+
+    - name: Crear directorio de configuración de RKE2
+      file:
+        path: /etc/rancher/rke2
+        state: directory
+        mode: '0755'
+        recurse: yes
+
+    - name: Crear archivo config.yaml con configuración de CNIs
+      copy:
+        dest: /etc/rancher/rke2/config.yaml
+        content: |
+          cni:
+          - multus
+          - flannel
+        mode: '0644'
+
+    - name: Iniciar servicio rke2-server
+      systemd:
+        name: rke2-server.service
+        state: started
+
+    - name: Esperar a que se genere el archivo node-token
+      wait_for:
+        path: /var/lib/rancher/rke2/server/node-token
+        timeout: 120
+
+    - name: Descargar node-token a la máquina física
+      fetch:
+        src: /var/lib/rancher/rke2/server/node-token
+        dest: ./tokens/  # Carpeta local
+        flat: yes
+
+
+    - name: Copiar archivo kubeconfig a /tmp/rke2.yaml
+      copy:
+        remote_src: yes        
+        src: /etc/rancher/rke2/rke2.yaml
+        dest: /tmp/rke2.yaml
+        mode: '0777'
+
+    - name: Copiar kubeconfig a /home/ubuntu/rke2.yaml
+      copy:
+        remote_src: yes        
+        src: /tmp/rke2.yaml
+        dest: /home/ubuntu/rke2.yaml
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Exportar variable de entorno KUBECONFIG al .bashrc
+      lineinfile:
+        path: /home/ubuntu/.bashrc
+        line: 'export KUBECONFIG=/home/ubuntu/rke2.yaml'
+        insertafter: EOF
