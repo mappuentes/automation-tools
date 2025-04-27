@@ -8,6 +8,8 @@ users:
     shell: /bin/bash
     plain_text_passwd: "ubuntu"
     lock_passwd: false
+    ssh_authorized_keys:
+      - ${SSH_PUBLIC_KEY}
 
 ssh_pwauth: true
 disable_root: false

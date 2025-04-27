@@ -45,6 +45,18 @@ variable "vm_worker2_ip" {
   default = "10.0.0.102"
 }
 
+variable "ssh_ansible_key_master" {
+  default = file("~/.ssh/id_rsa_ansible_master.pub")
+}
+
+variable "ssh_ansible_key_worker1" {
+  default = file("~/.ssh/id_rsa_ansible_worker1.pub")
+}
+
+variable "ssh_ansible_key_worker2" {
+  default = file("~/.ssh/id_rsa_ansible_worker2.pub")
+}
+
 resource "libvirt_volume" "master-qcow2" {
   provider = libvirt.gaspar
   name     = "masterUbuntu20.04"
@@ -72,8 +84,9 @@ resource "libvirt_volume" "worker2-qcow2" {
 data "template_file" "user_data_master" {
   template = file("userdata.tpl")
   vars = {
-    HOSTNAME   = var.vm_master
-    IP_ADDRESS = var.vm_master_ip
+    HOSTNAME       = var.vm_master
+    IP_ADDRESS     = var.vm_master_ip
+    SSH_PUBLIC_KEY = var.ssh_ansible_key_master
   }
 }
 
@@ -86,8 +99,9 @@ resource "libvirt_cloudinit_disk" "cloudinit_master" {
 data "template_file" "user_data_worker1" {
   template = file("userdata.tpl")
   vars = {
-    HOSTNAME   = var.vm_worker1
-    IP_ADDRESS = var.vm_worker1_ip
+    HOSTNAME       = var.vm_worker1
+    IP_ADDRESS     = var.vm_worker1_ip
+    SSH_PUBLIC_KEY = var.ssh_ansible_key_worker1
   }
 }
 
@@ -100,8 +114,9 @@ resource "libvirt_cloudinit_disk" "cloudinit_worker1" {
 data "template_file" "user_data_worker2" {
   template = file("userdata.tpl")
   vars = {
-    HOSTNAME   = var.vm_worker2
-    IP_ADDRESS = var.vm_worker2_ip
+    HOSTNAME       = var.vm_worker2
+    IP_ADDRESS     = var.vm_worker2_ip
+    SSH_PUBLIC_KEY = var.ssh_ansible_key_worker2
   }
 }
 
