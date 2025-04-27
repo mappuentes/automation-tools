@@ -3,8 +3,19 @@
   hosts: master
   become: yes
 
+  vars:
+    hostname: "{{ inventory_hostname }}"  # El nombre de los hosts del inventario
+
   tasks:
-    # Comprobar si el archivo rke2.yaml existe (lo que indica que RKE2 ya está instalado)
+    - name: Establecer el nombre de host
+      command: hostnamectl set-hostname "{{ hostname }}"
+
+    - name: Reiniciar systemd-hostnamed
+      systemd:
+        name: systemd-hostnamed
+        state: restarted
+
+    # Comprobar si el archivo rke2.yaml existe
     - name: Comprobar si el archivo rke2.yaml existe
       stat:
         path: /etc/rancher/rke2/rke2.yaml
