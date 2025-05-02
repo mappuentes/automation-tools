@@ -24,6 +24,8 @@
     # Instalar RKE2 si no está instalado
     - name: Instalar RKE2 si no está instalado
       shell: curl -sfL https://get.rke2.io | INSTALL_rke2_TYPE="agent" sh -
+      args:
+        warn: false
       when: not rke2_config.stat.exists
 
     - name: Habilitar servicio rke2-agent
@@ -54,7 +56,7 @@
       copy:
         dest: /etc/rancher/rke2/config.yaml
         content: |
-          ip: https://10.0.0.100:9345 
+          server: https://10.0.0.100:9345 
           token: {{ token.content | b64decode }}
           cni:
           - multus

@@ -25,7 +25,7 @@ source "qemu" "ubuntu" {
   cd_label         = "cidata"
   disk_compression = true
   disk_image       = true
-  disk_size        = "10G"
+  disk_size        = "40G"
   headless         = true
   iso_checksum     = "file:https://cloud-images.ubuntu.com/${var.ubuntu_version}/current/SHA256SUMS"
   iso_url          = "https://cloud-images.ubuntu.com/${var.ubuntu_version}/current/${var.ubuntu_version}-server-cloudimg-amd64.img"
@@ -35,8 +35,8 @@ source "qemu" "ubuntu" {
   ssh_username     = "ubuntu"
   vm_name          = "ubuntu-${var.ubuntu_version}.img"
   qemuargs = [
-    ["-m", "2048M"],
-    ["-smp", "2"],
+    ["-m", "4096M"],
+    ["-smp", "4"],
     ["-serial", "mon:stdio"],
   ]
 }

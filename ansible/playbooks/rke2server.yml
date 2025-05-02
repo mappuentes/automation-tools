@@ -24,6 +24,8 @@
     # Instalar RKE2 si no está instalado
     - name: Instalar RKE2 si no está instalado
       shell: curl -sfL https://get.rke2.io | sh -
+      args:
+        warn: false
       when: not rke2_config.stat.exists
 
     - name: Habilitar servicio rke2-server
@@ -84,4 +86,6 @@
       lineinfile:
         path: /home/ubuntu/.bashrc
         line: 'export KUBECONFIG=/home/ubuntu/rke2.yaml'
+        state: present
         insertafter: EOF
+

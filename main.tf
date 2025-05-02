@@ -128,8 +128,8 @@ resource "libvirt_cloudinit_disk" "cloudinit_worker2" {
 
 resource "libvirt_domain" "master" {
   name    = var.vm_master
-  memory  = 2048
-  vcpu    = 2
+  memory  = 4096
+  vcpu    = 4
 
   disk {
     volume_id = libvirt_volume.master-qcow2.id
@@ -156,8 +156,8 @@ resource "libvirt_domain" "master" {
 resource "libvirt_domain" "worker1" {
   provider = libvirt.melchor
   name     = var.vm_worker1
-  memory   = 2048
-  vcpu     = 2
+  memory   = 4096
+  vcpu     = 4
 
   disk {
     volume_id = libvirt_volume.worker1-qcow2.id
@@ -185,8 +185,8 @@ resource "libvirt_domain" "worker1" {
 resource "libvirt_domain" "worker2" {
   provider = libvirt.gaspar
   name     = var.vm_worker2
-  memory   = 2048
-  vcpu     = 2
+  memory   = 4096
+  vcpu     = 4
 
   disk {
     volume_id = libvirt_volume.worker2-qcow2.id
