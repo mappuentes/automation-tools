@@ -54,23 +54,24 @@
         dest: "{{ repo_dest }}"
         force: yes
 
-    - name: Aumentar watchers limit
-      shell: |
-        ulimit -n {{ ulimit_nofile }}
-      args:
-        executable: /bin/bash
+    - name: Establecer fs.file-max en 104000
+      sysctl:
+        name: fs.file-max
+        value: 104000
+        state: present
+        reload: yes
 
-    - name: Actualizar caché de apt
+    - name: Actualizar cache apt
       apt:
         update_cache: yes
 
-    - name: Instalar pip en sistemas Debian/Ubuntu
+    - name: Instalar pip 
       apt:
         name: python3-pip
         state: present
       become: yes
 
-    - name: Instalar docker-py con pip3
+    - name: Instalar docker-py con pip3 necesario para el login en DockerHub
       pip:
         name: docker-py
         executable: pip3
@@ -81,12 +82,19 @@
         username: "{{ dockerhub_user }}"
         password: "{{ dockerhub_pass }}"
 
-    - name: Build & push Docker image
+    - name: Comprobar si la imagen de Codeco ya existe localmente
+      docker_image_info:
+        name: "{{ image_tag }}"
+      register: image_info
+      ignore_errors: yes
+
+    - name: Build & push Docker image (solo si no existe)
       command: make docker-build docker-push IMG={{ image_tag }}
       args:
         chdir: "{{ repo_dest }}"
       environment:
         PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
+      when: image_info.images | length == 0
 
     - name: Deploy Codeco Operator
       command: make deploy IMG={{ image_tag }}
@@ -94,3 +102,4 @@
         chdir: "{{ repo_dest }}"
       environment:
         PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
+        KUBECONFIG: "/home/ubuntu/rke2.yaml"
