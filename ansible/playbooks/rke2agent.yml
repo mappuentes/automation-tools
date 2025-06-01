@@ -15,6 +15,27 @@
         name: systemd-hostnamed
         state: restarted
 
+    - name: Comprobar si directorio CNI existe
+      file:
+        path: /opt/cni/bin
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Descargar CNI plugins
+      get_url:
+        url: https://github.com/containernetworking/plugins/releases/download/v1.4.0/cni-plugins-linux-amd64-v1.4.0.tgz
+        dest: /tmp/cni-plugins.tgz
+        mode: '0644'
+
+    - name: Extraer CNI plugins en /opt/cni/bin
+      unarchive:
+        src: /tmp/cni-plugins.tgz
+        dest: /opt/cni/bin
+        remote_src: yes
+        extra_opts: [--no-overwrite-dir]
+
     # Comprobar si el archivo rke2.yaml existe
     - name: Comprobar si el archivo rke2.yaml existe
       stat:
