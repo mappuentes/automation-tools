@@ -58,9 +58,8 @@
         content: |
           server: https://10.0.0.100:9345 
           token: {{ token.content | b64decode }}
-          cni:
-          - multus
-          - flannel
+          cni: none
+          cluster-cidr: "10.244.0.0/16"
         mode: '0644'
 
     - name: Iniciar servicio rke2-agent
