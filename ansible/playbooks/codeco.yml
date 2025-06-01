@@ -1,0 +1,96 @@
+---
+- name: Deploy CodecoApp Operator
+  hosts: master
+  become: true
+  vars:
+    repo_url: "https://gitlab.eclipse.org/eclipse-research-labs/codeco-project/acm.git"
+    repo_dest: "/home/master/acm"
+    dockerhub_user: "miguelliceon"
+    image_tag: "miguelliceon/codecoapp-operator:2.0.0"
+    ulimit_nofile: 104000
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: Comprobar prerequisitos instalados
+      vars:
+        tools:
+          - docker  
+          - make
+          - helm
+          - git
+          - nano
+          - curl
+          - wget
+          - sudo
+          - rsync
+          - jq
+          - yq
+      block:
+        - name: Check tool "{{ item }}"
+          command: which {{ item }}
+          register: tool_check
+          failed_when: tool_check.rc != 0
+          changed_when: false
+          loop: "{{ tools }}"
+
+    - name: Verificar si Go esta instalado en /usr/local/go/bin/go
+      stat:
+        path: /usr/local/go/bin/go
+      register: go_binary
+
+    - name: Confirmar que Go esta disponible
+      debug:
+        msg: "Go esta instalado en /usr/local/go/bin/go"
+      when: go_binary.stat.exists
+
+    - name: Falla si Go no esta instalado
+      fail:
+        msg: "Go no esta instalado en /usr/local/go/bin/go"
+      when: not go_binary.stat.exists
+
+    - name: Clonar repositorio ACM
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dest }}"
+        force: yes
+
+    - name: Aumentar watchers limit
+      shell: |
+        ulimit -n {{ ulimit_nofile }}
+      args:
+        executable: /bin/bash
+
+    - name: Actualizar caché de apt
+      apt:
+        update_cache: yes
+
+    - name: Instalar pip en sistemas Debian/Ubuntu
+      apt:
+        name: python3-pip
+        state: present
+      become: yes
+
+    - name: Instalar docker-py con pip3
+      pip:
+        name: docker-py
+        executable: pip3
+      become: yes
+
+    - name: Log into DockerHub
+      docker_login:
+        username: "{{ dockerhub_user }}"
+        password: "{{ dockerhub_pass }}"
+
+    - name: Build & push Docker image
+      command: make docker-build docker-push IMG={{ image_tag }}
+      args:
+        chdir: "{{ repo_dest }}"
+      environment:
+        PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
+
+    - name: Deploy Codeco Operator
+      command: make deploy IMG={{ image_tag }}
+      args:
+        chdir: "{{ repo_dest }}"
+      environment:
+        PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
