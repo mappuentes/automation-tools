@@ -128,7 +128,7 @@ resource "libvirt_cloudinit_disk" "cloudinit_worker2" {
 
 resource "libvirt_domain" "master" {
   name    = var.vm_master
-  memory  = 4096
+  memory  = 6144
   vcpu    = 4
 
   disk {
