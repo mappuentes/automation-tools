@@ -1,0 +1,15 @@
+---
+- name: Deploy CodecoApp Operator
+  hosts: master
+  become: true
+  vars:
+    repo_dest: "/home/master/acm"
+    image_tag: "miguelliceon/codecoapp-operator:2.0.0"
+  tasks:
+    - name: Deploy Codeco Operator
+      command: make deploy IMG={{ image_tag }}
+      args:
+        chdir: "{{ repo_dest }}"
+      environment:
+        PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
+        KUBECONFIG: "/home/ubuntu/rke2.yaml"

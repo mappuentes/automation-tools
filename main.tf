@@ -131,6 +131,10 @@ resource "libvirt_domain" "master" {
   memory  = 6144
   vcpu    = 4
 
+  cpu {
+    mode = "host-passthrough"
+  }
+
   disk {
     volume_id = libvirt_volume.master-qcow2.id
   }
@@ -158,6 +162,10 @@ resource "libvirt_domain" "worker1" {
   name     = var.vm_worker1
   memory   = 4096
   vcpu     = 4
+
+  cpu {
+    mode = "host-passthrough"
+  }
 
   disk {
     volume_id = libvirt_volume.worker1-qcow2.id
@@ -187,6 +195,10 @@ resource "libvirt_domain" "worker2" {
   name     = var.vm_worker2
   memory   = 4096
   vcpu     = 4
+
+  cpu {
+    mode = "host-passthrough"
+  }
 
   disk {
     volume_id = libvirt_volume.worker2-qcow2.id

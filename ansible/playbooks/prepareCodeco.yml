@@ -96,10 +96,28 @@
         PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
       when: image_info.images | length == 0
 
-    - name: Deploy Codeco Operator
-      command: make deploy IMG={{ image_tag }}
-      args:
-        chdir: "{{ repo_dest }}"
+##etiquetas
+    - name: Verificar si el nodo ya tiene el label "dedicated=control-plane"
+      command: kubectl get node master -o jsonpath='{.metadata.labels.dedicated}'
+      register: node_label
+      changed_when: false
+      failed_when: false
       environment:
-        PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
         KUBECONFIG: "/home/ubuntu/rke2.yaml"
+
+    - name: Etiquetar el nodo master solo si no tiene el label
+      command: kubectl label nodes master dedicated=control-plane
+      when: node_label.stdout != "control-plane"
+      environment:
+        KUBECONFIG: "/home/ubuntu/rke2.yaml"
+
+    - name: Label master node as control-plane role
+      become: true
+      ansible.builtin.command: >
+        kubectl label nodes master node-role.kubernetes.io/control-plane="" --overwrite
+      environment:
+        KUBECONFIG: "/home/ubuntu/rke2.yaml"
+      register: label_control_plane
+      changed_when: "'labeled' in label_control_plane.stdout or 'configured' in label_control_plane.stdout"
+      failed_when: label_control_plane.rc != 0 and "'already has a value' not in label_control_plane.stderr"
+
