@@ -121,3 +121,24 @@
       changed_when: "'labeled' in label_control_plane.stdout or 'configured' in label_control_plane.stdout"
       failed_when: label_control_plane.rc != 0 and "'already has a value' not in label_control_plane.stderr"
 
+##storageClass
+
+    - name: Descargar StorageClass dinamico
+      command: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+
+    - name: Crear Standard StorageClass
+      copy:
+        dest: /tmp/standard.yaml
+        content: |
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: standard
+          provisioner: rancher.io/local-path
+          volumeBindingMode: WaitForFirstConsumer
+          
+    - name: Aplicar StorageClass "standard"
+      command: kubectl apply -f standard.yaml
+      args:
+        chdir: /tmp
+

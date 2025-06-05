@@ -132,7 +132,8 @@ resource "libvirt_domain" "master" {
   vcpu    = 4
 
   cpu {
-    mode = "host-passthrough"
+    mode  = "custom"
+    model = "EPYC-Milan"
   }
 
   disk {
@@ -164,7 +165,8 @@ resource "libvirt_domain" "worker1" {
   vcpu     = 4
 
   cpu {
-    mode = "host-passthrough"
+    mode  = "custom"
+    model = "EPYC-Milan"
   }
 
   disk {
@@ -197,7 +199,8 @@ resource "libvirt_domain" "worker2" {
   vcpu     = 4
 
   cpu {
-    mode = "host-passthrough"
+    mode  = "custom"
+    model = "EPYC-Milan"
   }
 
   disk {
