@@ -13,3 +13,9 @@
       environment:
         PATH: "/usr/local/go/bin:{{ ansible_env.PATH }}"
         KUBECONFIG: "/home/ubuntu/rke2.yaml"
+  register: deploy_output
+  ignore_errors: yes  # opcional: si no quieres que falle el playbook
+
+- name: Show deployment logs
+  debug:
+    var: deploy_output
