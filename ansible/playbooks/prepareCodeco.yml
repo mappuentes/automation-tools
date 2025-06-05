@@ -125,6 +125,8 @@
 
     - name: Descargar StorageClass dinamico
       command: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+      environment:
+        KUBECONFIG: "/home/ubuntu/rke2.yaml"
 
     - name: Crear Standard StorageClass
       copy:
@@ -136,9 +138,11 @@
             name: standard
           provisioner: rancher.io/local-path
           volumeBindingMode: WaitForFirstConsumer
-          
+
     - name: Aplicar StorageClass "standard"
       command: kubectl apply -f standard.yaml
       args:
         chdir: /tmp
+      environment:
+        KUBECONFIG: "/home/ubuntu/rke2.yaml"
 
