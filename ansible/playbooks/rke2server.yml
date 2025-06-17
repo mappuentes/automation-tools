@@ -5,6 +5,7 @@
 
   vars:
     hostname: "{{ inventory_hostname }}"  # El nombre de los hosts del inventario
+    vm_user: ubuntu                    # Usuario de la maquina virtual
 
   tasks:
     - name: Establecer el nombre de host
@@ -42,8 +43,8 @@
         path: /etc/rancher/rke2/rke2.yaml
       register: rke2_config
 
-    # Instalar RKE2 si no está instalado
-    - name: Instalar RKE2 si no está instalado
+    # Instalar RKE2 si no esta instalado
+    - name: Instalar RKE2 si no esta instalado
       shell: curl -sfL https://get.rke2.io | sh -
       args:
         warn: false
@@ -54,14 +55,14 @@
         name: rke2-server.service
         enabled: yes
 
-    - name: Crear directorio de configuración de RKE2
+    - name: Crear directorio de configuracion de RKE2
       file:
         path: /etc/rancher/rke2
         state: directory
         mode: '0755'
         recurse: yes
 
-    - name: Crear archivo config.yaml con configuración de CNIs
+    - name: Crear archivo config.yaml con configuracion de CNIs
       copy:
         dest: /etc/rancher/rke2/config.yaml
         content: |
@@ -79,12 +80,11 @@
         path: /var/lib/rancher/rke2/server/node-token
         timeout: 120
 
-    - name: Descargar node-token a la máquina física
+    - name: Descargar node-token a la maquina fisica
       fetch:
         src: /var/lib/rancher/rke2/server/node-token
         dest: ./tokens/  # Carpeta local
         flat: yes
-
 
     - name: Copiar archivo kubeconfig a /tmp/rke2.yaml
       copy:
@@ -93,19 +93,19 @@
         dest: /tmp/rke2.yaml
         mode: '0777'
 
-    - name: Copiar kubeconfig a /home/ubuntu/rke2.yaml
+    - name: Copiar kubeconfig a /home/{{ vm_user }}/rke2.yaml
       copy:
         remote_src: yes        
         src: /tmp/rke2.yaml
-        dest: /home/ubuntu/rke2.yaml
-        owner: ubuntu
-        group: ubuntu
+        dest: /home/{{ vm_user }}/rke2.yaml
+        owner: "{{ vm_user }}"
+        group: "{{ vm_user }}"
         mode: '0644'
 
     - name: Exportar variable de entorno KUBECONFIG al .bashrc
       lineinfile:
-        path: /home/ubuntu/.bashrc
-        line: 'export KUBECONFIG=/home/ubuntu/rke2.yaml'
+        path: /home/{{ vm_user }}/.bashrc
+        line: 'export KUBECONFIG=/home/{{ vm_user }}/rke2.yaml'
         state: present
         insertafter: EOF
 
