@@ -10,13 +10,13 @@ packer {
 variable "qemu_accelerator" {
   type        = string
   default     = "kvm"
-  description = "Qemu accelerator to use. On Linux use kvm and macOS use hvf."
+  description = "Variable que permite elegir el accelerator a usar. En Linux se usa kvm y en macOS hvf."
 }
 
 variable "ubuntu_version" {
   type        = string
   default     = "focal"
-  description = "Ubuntu codename version (i.e. 20.04 is focal and 22.04 is jammy)"
+  description = "Variable que permite elegir la version de ubuntu a usar"
 }
 
 source "qemu" "ubuntu" {
@@ -45,9 +45,6 @@ build {
   sources = ["source.qemu.ubuntu"]
 
   provisioner "shell" {
-    // run scripts with sudo, as the default cloud image user is unprivileged
-    execute_command = "echo 'packer' | sudo -S sh -c '{{ .Vars }} {{ .Path }}'"
-    // NOTE: cleanup.sh should always be run last, as this performs post-install cleanup tasks
     scripts = [
       "scripts/setup.sh",
       "scripts/cleanup.sh"

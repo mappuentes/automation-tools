@@ -1,40 +1,43 @@
 #!/bin/bash -eux
-echo "==> remove SSH keys used for building"
+
+echo "==> eliminar claves SSH utilizadas durante la construccion"
 rm -f /home/ubuntu/.ssh/authorized_keys
 rm -f /root/.ssh/authorized_keys
 
-echo "==> Clear out machine id"
+echo "==> limpiar el identificador unico de la maquina"
 truncate -s 0 /etc/machine-id
 
-echo "==> Remove the contents of /tmp and /var/tmp"
+echo "==> eliminar el contenido de /tmp y /var/tmp"
 rm -rf /tmp/* /var/tmp/*
 
-echo "==> Truncate any logs that have built up during the install"
+echo "==> truncar los registros generados durante la instalacion"
 find /var/log -type f -exec truncate --size=0 {} \;
 
-echo "==> Cleanup bash history"
+echo "==> limpiar el historial de bash"
 rm -f ~/.bash_history
 
-echo "remove /usr/share/doc/"
+echo "==> eliminar /usr/share/doc/"
 rm -rf /usr/share/doc/*
 
-echo "==> remove /var/cache"
+echo "==> eliminar /var/cache"
 find /var/cache -type f -exec rm -rf {} \;
 
-echo "==> Cleanup apt"
+echo "==> limpiar apt"
 apt-get -y autoremove
 sudo apt-get clean
 sudo rm -rf /var/lib/apt/lists/*
 
-echo "==> force a new random seed to be generated"
+echo "==> forzar la generacion de una nueva semilla aleatoria"
 rm -f /var/lib/systemd/random-seed
 
-echo "==> Clear the history so our install isn't there"
+echo "==> borrar el historial para que no quede rastro de la instalacion"
 rm -f /root/.wget-hsts
 
 export HISTSIZE=0
 
-echo "==> Reset cloud-init"
+echo "==> reiniciar cloud-init"
 sudo rm -f /etc/cloud/cloud.cfg.d/99-installer.cfg
 sudo rm -f /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg
 sudo cloud-init clean
+
+
