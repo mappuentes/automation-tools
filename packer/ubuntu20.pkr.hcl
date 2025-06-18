@@ -43,8 +43,8 @@ source "qemu" "ubuntu" {
 
 build {
   sources = ["source.qemu.ubuntu"]
-
   provisioner "shell" {
+    execute_command = "echo 'packer' | sudo -S sh -c '{{ .Vars }} {{ .Path }}'"
     scripts = [
       "scripts/setup.sh",
       "scripts/cleanup.sh"

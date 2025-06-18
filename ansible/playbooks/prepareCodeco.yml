@@ -1,5 +1,5 @@
 ---
-- name: Deploy CodecoApp Operator
+- name: Prepare enviroment for CodecoApp Operator
   hosts: master
   become: true
   vars:
