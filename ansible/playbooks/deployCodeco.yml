@@ -1,12 +1,12 @@
 ---
-- name: Deploy CodecoApp Operator
+- name: Desplegar CodecoApp Operator
   hosts: master
   become: true
   vars:
     repo_dest: "/home/master/acm"
     image_tag: "miguelliceon/codecoapp-operator:2.0.0"
   tasks:
-    - name: Deploy Codeco Operator
+    - name: Desplegar Codeco Operator
       command: make deploy IMG={{ image_tag }}
       args:
         chdir: "{{ repo_dest }}"

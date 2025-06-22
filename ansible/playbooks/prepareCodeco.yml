@@ -1,5 +1,5 @@
 ---
-- name: Prepare enviroment for CodecoApp Operator
+- name: Preparar entorno para CodecoApp Operator
   hosts: master
   become: true
   vars:
@@ -109,7 +109,7 @@
       environment:
         KUBECONFIG: "/home/ubuntu/rke2.yaml"
 
-    - name: Label master node as control-plane role
+    - name: Etiquetar el nodo master con "node-role.kubernetes.io/control-plane"
       ansible.builtin.command: >
         kubectl label nodes master node-role.kubernetes.io/control-plane="" --overwrite
       environment:
