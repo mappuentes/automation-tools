@@ -104,6 +104,7 @@
         KUBECONFIG: "/home/ubuntu/rke2.yaml"
 
     - name: Etiquetar el nodo master solo si no tiene el label
+      become: yes
       command: kubectl label nodes master dedicated=control-plane
       when: node_label.stdout != "control-plane"
       environment:
